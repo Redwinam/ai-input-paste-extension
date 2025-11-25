@@ -1,0 +1,11 @@
+{
+  "name": "ai-input-paste-extension",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild content.js --bundle --outfile=dist/content.bundle.js --format=iife --platform=browser --target=chrome110"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.0"
+  }
+}

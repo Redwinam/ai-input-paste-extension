@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "AI Input Paste Helper",
+  "version": "1.0",
+  "description": "Adds a paste button and pre-text editing mode to ChatGPT, Yuanbao, and Gemini.",
+  "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
+    "storage"
+  ],
+  "icons": {
+    "128": "icons/icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://yuanbao.tencent.com/*",
+        "https://gemini.google.com/*"
+      ],
+      "js": ["dist/content.bundle.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
