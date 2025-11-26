@@ -4,100 +4,76 @@
     constructor(options) {
       this.onPaste = options.onPaste;
       this.onEditPrefix = options.onEditPrefix;
-      this.isDarkMode = options.isDarkMode || false;
+      this.onStateChange = options.onStateChange;
       this.autoSend = options.autoSend !== void 0 ? options.autoSend : true;
-      this.prefixEnabled = options.prefixEnabled || false;
-      this.prefixText = options.prefixText || "";
+      this.prefixEnabled = options.initialPrefixEnabled !== void 0 ? options.initialPrefixEnabled : options.prefixEnabled || false;
+      this.prefixText = options.initialPrefixText !== void 0 ? options.initialPrefixText : options.prefixText || "";
       this.element = null;
       this.autoSendCheckbox = null;
       this.prefixCheckbox = null;
     }
     create() {
       const wrapper = document.createElement("div");
-      wrapper.style.position = "static";
-      wrapper.style.zIndex = "2";
-      wrapper.style.display = "flex";
-      wrapper.style.alignItems = "center";
-      wrapper.style.gap = "8px";
-      wrapper.style.flexWrap = "wrap";
-      wrapper.style.padding = "0";
-      wrapper.style.margin = "0";
-      wrapper.style.width = "100%";
-      wrapper.style.boxSizing = "border-box";
-      wrapper.style.backgroundColor = "transparent";
-      wrapper.style.pointerEvents = "auto";
-      const prefixWrapper = document.createElement("div");
-      prefixWrapper.style.display = "flex";
-      prefixWrapper.style.alignItems = "center";
+      wrapper.className = "ai-paste-toolbar";
+      const prefixGroup = document.createElement("div");
+      prefixGroup.className = "ai-paste-group";
+      const prefixWrapper = document.createElement("label");
+      prefixWrapper.className = "ai-paste-checkbox-wrapper";
       const prefixCheckbox = document.createElement("input");
       prefixCheckbox.type = "checkbox";
-      prefixCheckbox.id = "ai-paste-prefix";
+      prefixCheckbox.className = "ai-paste-checkbox";
       prefixCheckbox.checked = this.prefixEnabled;
-      prefixCheckbox.style.cursor = "pointer";
-      const prefixLabel = document.createElement("label");
-      prefixLabel.htmlFor = "ai-paste-prefix";
+      prefixCheckbox.addEventListener("change", () => {
+        this.prefixEnabled = prefixCheckbox.checked;
+        this.notifyStateChange();
+      });
+      const prefixLabel = document.createElement("span");
+      prefixLabel.className = "ai-paste-label ai-paste-label-clickable";
       prefixLabel.textContent = "\u6709\u524D\u7F6E\u6587\u672C";
-      prefixLabel.style.fontSize = "11px";
-      prefixLabel.style.margin = "0";
-      prefixLabel.style.cursor = "pointer";
-      prefixLabel.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
-      const editPrefixBtn = document.createElement("button");
-      editPrefixBtn.textContent = "\u7F16\u8F91\u6536\u85CF";
-      editPrefixBtn.style.fontSize = "11px";
-      editPrefixBtn.style.padding = "0";
-      editPrefixBtn.style.borderRadius = "4px";
-      editPrefixBtn.style.border = "1px solid #ccc";
-      editPrefixBtn.style.cursor = "pointer";
-      editPrefixBtn.style.backgroundColor = this.isDarkMode ? "#3f3f46" : "#f4f4f5";
-      editPrefixBtn.style.color = this.isDarkMode ? "#e5e7eb" : "#111827";
-      editPrefixBtn.addEventListener("click", (e) => {
+      prefixLabel.title = "\u70B9\u51FB\u7F16\u8F91\u524D\u7F6E\u6587\u672C";
+      prefixLabel.addEventListener("click", (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (this.onEditPrefix) this.onEditPrefix(this.prefixText);
       });
       prefixWrapper.appendChild(prefixCheckbox);
       prefixWrapper.appendChild(prefixLabel);
-      prefixWrapper.appendChild(editPrefixBtn);
       this.prefixCheckbox = prefixCheckbox;
-      const checkboxWrapper = document.createElement("div");
-      checkboxWrapper.style.display = "flex";
-      checkboxWrapper.style.alignItems = "center";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.id = "ai-paste-autosend";
-      checkbox.checked = this.autoSend;
-      checkbox.style.cursor = "pointer";
-      const label = document.createElement("label");
-      label.htmlFor = "ai-paste-autosend";
-      label.textContent = "\u81EA\u52A8\u53D1\u9001";
-      label.style.fontSize = "11px";
-      label.style.margin = "0";
-      label.style.cursor = "pointer";
-      label.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
-      checkboxWrapper.appendChild(checkbox);
-      checkboxWrapper.appendChild(label);
-      this.autoSendCheckbox = checkbox;
+      prefixGroup.appendChild(prefixWrapper);
+      const autoSendWrapper = document.createElement("label");
+      autoSendWrapper.className = "ai-paste-checkbox-wrapper";
+      const autoSendCheckbox = document.createElement("input");
+      autoSendCheckbox.type = "checkbox";
+      autoSendCheckbox.className = "ai-paste-checkbox";
+      autoSendCheckbox.checked = this.autoSend;
+      const autoSendLabel = document.createElement("span");
+      autoSendLabel.className = "ai-paste-label";
+      autoSendLabel.textContent = "\u53D1\u9001";
+      autoSendWrapper.appendChild(autoSendCheckbox);
+      autoSendWrapper.appendChild(autoSendLabel);
+      this.autoSendCheckbox = autoSendCheckbox;
       const pasteBtn = document.createElement("button");
+      pasteBtn.className = "ai-paste-btn ai-paste-btn-primary";
       pasteBtn.textContent = "\u7C98\u8D34";
-      pasteBtn.style.fontSize = "12px";
-      pasteBtn.style.padding = "0";
-      pasteBtn.style.borderRadius = "4px";
-      pasteBtn.style.border = "1px solid #ccc";
-      pasteBtn.style.cursor = "pointer";
-      pasteBtn.style.backgroundColor = this.isDarkMode ? "#10a37f" : "#10a37f";
-      pasteBtn.style.color = "#fff";
-      pasteBtn.style.fontWeight = "600";
-      pasteBtn.style.boxShadow = "0 1px 0 rgba(0,0,0,0.05)";
       pasteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         if (this.onPaste) this.onPaste();
       });
-      wrapper.appendChild(prefixWrapper);
-      wrapper.appendChild(checkboxWrapper);
+      wrapper.appendChild(prefixGroup);
+      wrapper.appendChild(autoSendWrapper);
       wrapper.appendChild(pasteBtn);
       this.element = wrapper;
       this.favorites = [];
       this.loadFavorites();
       return wrapper;
+    }
+    notifyStateChange() {
+      if (this.onStateChange) {
+        this.onStateChange({
+          prefixEnabled: this.prefixEnabled,
+          prefixText: this.prefixText
+        });
+      }
     }
     isAutoSend() {
       return this.autoSendCheckbox ? this.autoSendCheckbox.checked : false;
@@ -110,6 +86,7 @@
     }
     setPrefixText(text) {
       this.prefixText = text || "";
+      this.notifyStateChange();
     }
     async loadFavorites() {
       try {
@@ -149,7 +126,6 @@
     constructor(options) {
       this.onConfirm = options.onConfirm;
       this.onCancel = options.onCancel;
-      this.isDarkMode = options.isDarkMode || false;
       this.modal = null;
       this.textarea = null;
       this.favListEl = null;
@@ -165,112 +141,61 @@
       this.favorites = Array.isArray(favorites) ? favorites.map((f) => ({ id: f.id || this._genId(), text: f.text || "" })) : [];
       this.currentText = initialText || "";
       const overlay = document.createElement("div");
-      overlay.style.position = "fixed";
-      overlay.style.top = "0";
-      overlay.style.left = "0";
-      overlay.style.width = "100%";
-      overlay.style.height = "100%";
-      overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-      overlay.style.zIndex = "10001";
-      overlay.style.display = "flex";
-      overlay.style.justifyContent = "center";
-      overlay.style.alignItems = "center";
+      overlay.className = "ai-paste-modal-overlay";
       const content = document.createElement("div");
-      content.style.width = "720px";
-      content.style.maxWidth = "90%";
-      content.style.backgroundColor = this.isDarkMode ? "#2d2d2d" : "#fff";
-      content.style.borderRadius = "8px";
-      content.style.padding = "16px";
-      content.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-      content.style.display = "flex";
-      content.style.flexDirection = "column";
-      content.style.gap = "12px";
-      const header = document.createElement("h3");
-      header.textContent = "\u7F16\u8F91\u524D\u7F6E\u6536\u85CF";
-      header.style.margin = "0";
-      header.style.color = this.isDarkMode ? "#fff" : "#333";
+      content.className = "ai-paste-modal-content";
+      const header = document.createElement("div");
+      header.className = "ai-paste-modal-header";
+      const title = document.createElement("h3");
+      title.className = "ai-paste-modal-title";
+      title.textContent = "\u7F16\u8F91\u524D\u7F6E\u6536\u85CF";
+      header.appendChild(title);
       const currentLabel = document.createElement("div");
+      currentLabel.className = "ai-paste-section-title";
       currentLabel.textContent = "\u5F53\u524D\u524D\u7F6E\u6587\u672C";
-      currentLabel.style.fontSize = "12px";
-      currentLabel.style.color = this.isDarkMode ? "#ddd" : "#555";
       const textarea = document.createElement("textarea");
+      textarea.className = "ai-paste-textarea";
       textarea.value = this.currentText;
-      textarea.style.width = "100%";
-      textarea.style.height = "120px";
-      textarea.style.padding = "8px";
-      textarea.style.borderRadius = "4px";
-      textarea.style.border = "1px solid #ccc";
-      textarea.style.resize = "vertical";
-      textarea.style.fontFamily = "monospace";
-      textarea.style.fontSize = "13px";
-      textarea.style.backgroundColor = this.isDarkMode ? "#1e1e1e" : "#fff";
-      textarea.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
       this.textarea = textarea;
       const favHeader = document.createElement("div");
+      favHeader.className = "ai-paste-section-title";
       favHeader.textContent = "\u6536\u85CF\u5217\u8868";
-      favHeader.style.fontSize = "12px";
-      favHeader.style.color = this.isDarkMode ? "#ddd" : "#555";
+      favHeader.style.marginTop = "12px";
       const favList = document.createElement("div");
-      favList.style.display = "flex";
-      favList.style.flexDirection = "column";
-      favList.style.gap = "8px";
-      favList.style.maxHeight = "300px";
-      favList.style.overflow = "auto";
+      favList.className = "ai-paste-list";
       this.favListEl = favList;
       this._renderFavorites();
       const actions = document.createElement("div");
-      actions.style.display = "flex";
-      actions.style.justifyContent = "space-between";
+      actions.className = "ai-paste-modal-actions";
       const leftActions = document.createElement("div");
-      leftActions.style.display = "flex";
-      leftActions.style.gap = "8px";
+      leftActions.className = "ai-paste-modal-actions-left";
       const addBtn = document.createElement("button");
+      addBtn.className = "ai-paste-btn";
       addBtn.textContent = "\u6DFB\u52A0\u6536\u85CF";
-      addBtn.style.padding = "6px 10px";
-      addBtn.style.borderRadius = "4px";
-      addBtn.style.border = "1px solid #ccc";
-      addBtn.style.cursor = "pointer";
-      addBtn.style.backgroundColor = this.isDarkMode ? "#606060" : "#fff";
-      addBtn.style.color = this.isDarkMode ? "#fff" : "#333";
       addBtn.addEventListener("click", () => {
         this.favorites.push({ id: this._genId(), text: this.textarea.value || "" });
         this._renderFavorites();
       });
       leftActions.appendChild(addBtn);
-      const rightActions = document.createElement("div");
-      rightActions.style.display = "flex";
-      rightActions.style.gap = "8px";
       const cancelBtn = document.createElement("button");
+      cancelBtn.className = "ai-paste-btn";
       cancelBtn.textContent = "\u53D6\u6D88";
-      cancelBtn.style.padding = "6px 12px";
-      cancelBtn.style.borderRadius = "4px";
-      cancelBtn.style.border = "1px solid #ccc";
-      cancelBtn.style.cursor = "pointer";
-      cancelBtn.style.backgroundColor = "transparent";
-      cancelBtn.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
       cancelBtn.addEventListener("click", () => {
         this.close();
         if (this.onCancel) this.onCancel();
       });
       const confirmBtn = document.createElement("button");
+      confirmBtn.className = "ai-paste-btn ai-paste-btn-primary";
       confirmBtn.textContent = "\u4FDD\u5B58\u5E76\u5173\u95ED";
-      confirmBtn.style.padding = "6px 12px";
-      confirmBtn.style.borderRadius = "4px";
-      confirmBtn.style.border = "none";
-      confirmBtn.style.cursor = "pointer";
-      confirmBtn.style.backgroundColor = "#10a37f";
-      confirmBtn.style.color = "#fff";
-      confirmBtn.style.fontWeight = "bold";
       confirmBtn.addEventListener("click", () => {
         this.currentText = this.textarea.value || "";
         const payload2 = { favorites: this.favorites.slice(), currentText: this.currentText };
         this.close();
         if (this.onConfirm) this.onConfirm(payload2);
       });
-      rightActions.appendChild(cancelBtn);
-      rightActions.appendChild(confirmBtn);
       actions.appendChild(leftActions);
-      actions.appendChild(rightActions);
+      actions.appendChild(cancelBtn);
+      actions.appendChild(confirmBtn);
       content.appendChild(header);
       content.appendChild(currentLabel);
       content.appendChild(textarea);
@@ -287,50 +212,31 @@
       this.favListEl.innerHTML = "";
       this.favorites.forEach((fav, idx) => {
         const row = document.createElement("div");
-        row.style.display = "flex";
-        row.style.gap = "8px";
-        row.style.alignItems = "flex-start";
-        const ta = document.createElement("textarea");
-        ta.value = fav.text || "";
-        ta.style.flex = "1";
-        ta.style.minHeight = "80px";
-        ta.style.padding = "6px";
-        ta.style.borderRadius = "4px";
-        ta.style.border = "1px solid #ccc";
-        ta.style.resize = "vertical";
-        ta.style.fontFamily = "monospace";
-        ta.style.fontSize = "12px";
-        ta.style.backgroundColor = this.isDarkMode ? "#1e1e1e" : "#fff";
-        ta.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
-        ta.addEventListener("input", () => {
-          fav.text = ta.value;
-        });
+        row.className = "ai-paste-list-item";
+        const textDiv = document.createElement("div");
+        textDiv.className = "ai-paste-list-item-text";
+        textDiv.textContent = fav.text || "(\u7A7A)";
+        textDiv.title = fav.text;
+        const actionCol = document.createElement("div");
+        actionCol.className = "ai-paste-list-item-actions";
         const useBtn = document.createElement("button");
-        useBtn.textContent = "\u8BBE\u4E3A\u5F53\u524D";
-        useBtn.style.padding = "4px 8px";
-        useBtn.style.borderRadius = "4px";
-        useBtn.style.border = "1px solid #ccc";
-        useBtn.style.cursor = "pointer";
-        useBtn.style.backgroundColor = this.isDarkMode ? "#606060" : "#fff";
-        useBtn.style.color = this.isDarkMode ? "#fff" : "#333";
+        useBtn.className = "ai-paste-btn ai-paste-btn-sm";
+        useBtn.textContent = "\u4F7F\u7528";
         useBtn.addEventListener("click", () => {
           this.textarea.value = fav.text || "";
         });
         const delBtn = document.createElement("button");
-        delBtn.textContent = "\u5220\u9664";
-        delBtn.style.padding = "4px 8px";
-        delBtn.style.borderRadius = "4px";
-        delBtn.style.border = "1px solid #ccc";
-        delBtn.style.cursor = "pointer";
-        delBtn.style.backgroundColor = this.isDarkMode ? "#606060" : "#fff";
-        delBtn.style.color = this.isDarkMode ? "#fff" : "#333";
+        delBtn.className = "ai-paste-icon-btn ai-paste-btn-danger";
+        delBtn.innerHTML = "&times;";
+        delBtn.title = "\u5220\u9664";
         delBtn.addEventListener("click", () => {
           this.favorites = this.favorites.filter((f) => f.id !== fav.id);
           this._renderFavorites();
         });
-        row.appendChild(ta);
-        row.appendChild(useBtn);
-        row.appendChild(delBtn);
+        actionCol.appendChild(useBtn);
+        actionCol.appendChild(delBtn);
+        row.appendChild(textDiv);
+        row.appendChild(actionCol);
         this.favListEl.appendChild(row);
       });
     }
@@ -347,7 +253,8 @@
 
   // adapters/chatgpt.js
   var ChatGPTAdapter = class {
-    constructor() {
+    constructor(options = {}) {
+      this.options = options;
       this.targetSelector = "#prompt-textarea";
       this.sendButtonSelector = '[data-testid="send-button"]';
       this.controlsParentSelector = "div.relative.flex.w-full.items-end.px-3.py-3";
@@ -369,6 +276,7 @@
         }
       });
       this.controls = new PasteControls({
+        ...this.options,
         isDarkMode: document.documentElement.classList.contains("dark"),
         onPaste: () => this.onPasteClick(),
         onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })
@@ -428,7 +336,8 @@
 
   // adapters/yuanbao.js
   var YuanbaoAdapter = class {
-    constructor() {
+    constructor(options = {}) {
+      this.options = options;
       this.targetSelector = 'div.ql-editor[contenteditable="true"]';
       this.sendButtonSelector = "a.style__send-btn___ZsLmU";
       this.sendButtonFallback = 'button[aria-label="\u53D1\u9001"], div[role="button"][aria-label="\u53D1\u9001"]';
@@ -450,6 +359,7 @@
         }
       });
       this.controls = new PasteControls({
+        ...this.options,
         isDarkMode: false,
         onPaste: () => this.onPasteClick(),
         onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })
@@ -506,7 +416,8 @@
 
   // adapters/gemini.js
   var GeminiAdapter = class {
-    constructor() {
+    constructor(options = {}) {
+      this.options = options;
       this.targetSelector = "div.ql-editor.textarea";
       this.sendButtonSelector = 'button[aria-label="\u53D1\u9001"]';
       this.controlsParentSelector = ".text-input-field_textarea-wrapper";
@@ -528,6 +439,7 @@
         }
       });
       this.controls = new PasteControls({
+        ...this.options,
         isDarkMode: false,
         onPaste: () => this.onPasteClick(),
         onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })
@@ -585,19 +497,437 @@
     }
   };
 
+  // ui/styles.js
+  function injectStyles() {
+    const styleId = "ai-paste-helper-styles";
+    if (document.getElementById(styleId)) return;
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+        :root {
+            --ai-paste-bg: #ffffff;
+            --ai-paste-text: #333333;
+            --ai-paste-text-secondary: #666666;
+            --ai-paste-border: #e5e7eb;
+            --ai-paste-primary: #10a37f;
+            --ai-paste-primary-hover: #0d8a6c;
+            --ai-paste-primary-text: #ffffff;
+            --ai-paste-surface: #f9fafb;
+            --ai-paste-surface-hover: #f3f4f6;
+            --ai-paste-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --ai-paste-overlay: rgba(0, 0, 0, 0.5);
+            --ai-paste-radius: 8px;
+            --ai-paste-radius-sm: 6px;
+            --ai-paste-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --ai-paste-bg: #1e1e1e;
+                --ai-paste-text: #e5e7eb;
+                --ai-paste-text-secondary: #9ca3af;
+                --ai-paste-border: #3f3f46;
+                --ai-paste-primary: #10a37f;
+                --ai-paste-primary-hover: #0d8a6c;
+                --ai-paste-primary-text: #ffffff;
+                --ai-paste-surface: #27272a;
+                --ai-paste-surface-hover: #3f3f46;
+                --ai-paste-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+                --ai-paste-overlay: rgba(0, 0, 0, 0.7);
+            }
+        }
+
+        /* Force dark mode if host has dark-theme class or similar */
+        body.dark-theme, body.dark, [data-theme='dark'], html.dark, :root.dark {
+            --ai-paste-bg: #1e1e1e;
+            --ai-paste-text: #e5e7eb;
+            --ai-paste-text-secondary: #9ca3af;
+            --ai-paste-border: #3f3f46;
+            --ai-paste-primary: #10a37f;
+            --ai-paste-primary-hover: #0d8a6c;
+            --ai-paste-primary-text: #ffffff;
+            --ai-paste-surface: #27272a;
+            --ai-paste-surface-hover: #3f3f46;
+            --ai-paste-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --ai-paste-overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        .ai-paste-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0; /* Removed padding */
+            background-color: transparent;
+            font-family: var(--ai-paste-font);
+            font-size: 13px;
+            color: var(--ai-paste-text);
+            flex-wrap: wrap;
+        }
+
+        .ai-paste-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-paste-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .ai-paste-checkbox {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid var(--ai-paste-border);
+            border-radius: 4px;
+            background-color: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .ai-paste-checkbox:checked {
+            background-color: var(--ai-paste-primary);
+            border-color: var(--ai-paste-primary);
+        }
+
+        .ai-paste-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .ai-paste-label {
+            color: var(--ai-paste-text);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .ai-paste-label-clickable {
+            cursor: pointer;
+            border-bottom: 1px dashed var(--ai-paste-text-secondary);
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .ai-paste-label-clickable:hover {
+            color: var(--ai-paste-primary);
+            border-color: var(--ai-paste-primary);
+        }
+
+        .ai-paste-btn {
+            padding: 6px 12px;
+            border-radius: var(--ai-paste-radius-sm);
+            border: 1px solid var(--ai-paste-border);
+            background-color: var(--ai-paste-surface);
+            color: var(--ai-paste-text);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .ai-paste-btn:hover {
+            background-color: var(--ai-paste-surface-hover);
+            border-color: var(--ai-paste-text-secondary);
+        }
+
+        .ai-paste-btn-primary {
+            background-color: var(--ai-paste-primary);
+            color: var(--ai-paste-primary-text);
+            border: 1px solid transparent;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .ai-paste-btn-primary:hover {
+            background-color: var(--ai-paste-primary-hover);
+        }
+
+        .ai-paste-btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .ai-paste-icon-btn {
+            padding: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            background-color: transparent;
+            color: var(--ai-paste-text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .ai-paste-icon-btn:hover {
+            background-color: var(--ai-paste-surface-hover);
+            color: var(--ai-paste-text);
+        }
+
+        .ai-paste-btn-danger {
+            color: #ef4444;
+        }
+        
+        .ai-paste-btn-danger:hover {
+            color: #dc2626;
+        }
+        
+        body.dark-theme .ai-paste-btn-danger,
+        body.dark .ai-paste-btn-danger,
+        [data-theme='dark'] .ai-paste-btn-danger,
+        @media (prefers-color-scheme: dark) {
+             .ai-paste-btn-danger:hover {
+                background-color: rgba(239, 68, 68, 0.2);
+             }
+        }
+
+
+        /* Modal Styles */
+        .ai-paste-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--ai-paste-overlay);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+            animation: aiPasteFadeIn 0.2s ease-out;
+        }
+
+        .ai-paste-modal-content {
+            width: 600px;
+            max-width: 90%;
+            background-color: var(--ai-paste-bg);
+            border-radius: var(--ai-paste-radius);
+            padding: 16px; /* Reduced padding */
+            box-shadow: var(--ai-paste-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Reduced gap */
+            border: 1px solid var(--ai-paste-border);
+            animation: aiPasteSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ai-paste-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0; /* Reduced margin */
+        }
+
+        .ai-paste-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--ai-paste-text);
+            margin: 0;
+        }
+
+        .ai-paste-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ai-paste-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-paste-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border-radius: var(--ai-paste-radius-sm);
+            border: 1px solid var(--ai-paste-border);
+            background-color: var(--ai-paste-surface);
+            color: var(--ai-paste-text);
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .ai-paste-textarea:focus {
+            outline: none;
+            border-color: var(--ai-paste-primary);
+            box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.1);
+        }
+
+        .ai-paste-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px; /* Reduced gap */
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .ai-paste-list-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: transparent; /* Removed background */
+            border-radius: var(--ai-paste-radius-sm);
+            border-bottom: 1px solid var(--ai-paste-border); /* Separator */
+        }
+
+        .ai-paste-list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ai-paste-list-item:hover {
+            background-color: var(--ai-paste-surface);
+        }
+
+        .ai-paste-list-item-text {
+            flex: 1;
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--ai-paste-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .ai-paste-list-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-paste-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--ai-paste-border);
+        }
+
+        .ai-paste-modal-actions-left {
+            margin-right: auto;
+        }
+
+        @keyframes aiPasteFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes aiPasteSlideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Scrollbar styling */
+        .ai-paste-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ai-paste-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .ai-paste-list::-webkit-scrollbar-thumb {
+            background-color: var(--ai-paste-border);
+            border-radius: 3px;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+
   // content.js
-  function main() {
+  function generateColorFromHost(hostname) {
+    if (hostname.includes("gemini.google.com")) {
+      return { primary: "#4D69EA", hover: "#3B55D0" };
+    } else if (hostname.includes("chatgpt.com") || hostname.includes("openai.com")) {
+      return { primary: "#343541", hover: "#2A2B32" };
+    } else if (hostname.includes("yuanbao.tencent.com")) {
+      return { primary: "#7AC581", hover: "#68B06F" };
+    }
+    let hash = 0;
+    for (let i = 0; i < hostname.length; i++) {
+      hash = hostname.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = Math.abs(hash % 360);
+    const s = 70;
+    const l = 45;
+    return {
+      primary: `hsl(${h}, ${s}%, ${l}%)`,
+      hover: `hsl(${h}, ${s}%, ${l - 5}%)`
+      // Slightly darker for hover
+    };
+  }
+  async function getStoredState(host) {
+    const key = `aiPaste_state_${host}`;
+    try {
+      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+        const res = await new Promise((resolve) => chrome.storage.local.get([key], resolve));
+        return res[key] || null;
+      } else {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      }
+    } catch (e) {
+      console.warn("AI Paste Helper: Failed to load state", e);
+      return null;
+    }
+  }
+  async function saveStoredState(host, state) {
+    const key = `aiPaste_state_${host}`;
+    try {
+      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+        await new Promise((resolve) => chrome.storage.local.set({ [key]: state }, resolve));
+      } else {
+        localStorage.setItem(key, JSON.stringify(state));
+      }
+    } catch (e) {
+      console.warn("AI Paste Helper: Failed to save state", e);
+    }
+  }
+  async function main() {
     const host = window.location.hostname;
+    const colors = generateColorFromHost(host);
+    document.documentElement.style.setProperty("--ai-paste-primary", colors.primary);
+    document.documentElement.style.setProperty("--ai-paste-primary-hover", colors.hover);
+    injectStyles();
+    const savedState = await getStoredState(host);
     let adapter = null;
+    const adapterOptions = {
+      initialPrefixText: savedState?.prefixText || "",
+      // Default to true if no state saved, otherwise use saved state
+      initialPrefixEnabled: savedState ? savedState.prefixEnabled !== void 0 ? savedState.prefixEnabled : true : true,
+      onStateChange: (newState) => {
+        saveStoredState(host, newState);
+      }
+    };
     if (host.includes("chatgpt.com") || host.includes("openai.com")) {
       console.log("AI Paste Helper: Detected ChatGPT");
-      adapter = new ChatGPTAdapter();
+      adapter = new ChatGPTAdapter(adapterOptions);
     } else if (host.includes("yuanbao.tencent.com")) {
       console.log("AI Paste Helper: Detected Yuanbao");
-      adapter = new YuanbaoAdapter();
+      adapter = new YuanbaoAdapter(adapterOptions);
     } else if (host.includes("gemini.google.com")) {
       console.log("AI Paste Helper: Detected Gemini");
-      adapter = new GeminiAdapter();
+      adapter = new GeminiAdapter(adapterOptions);
     }
     if (adapter) {
       adapter.init();

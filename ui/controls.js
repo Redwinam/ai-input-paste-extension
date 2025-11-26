@@ -2,10 +2,11 @@ export class PasteControls {
   constructor(options) {
     this.onPaste = options.onPaste;
     this.onEditPrefix = options.onEditPrefix;
-    this.isDarkMode = options.isDarkMode || false;
+    this.onStateChange = options.onStateChange;
+
     this.autoSend = options.autoSend !== undefined ? options.autoSend : true;
-    this.prefixEnabled = options.prefixEnabled || false;
-    this.prefixText = options.prefixText || '';
+    this.prefixEnabled = options.initialPrefixEnabled !== undefined ? options.initialPrefixEnabled : (options.prefixEnabled || false);
+    this.prefixText = options.initialPrefixText !== undefined ? options.initialPrefixText : (options.prefixText || '');
 
     this.element = null;
     this.autoSendCheckbox = null;
@@ -14,104 +15,84 @@ export class PasteControls {
 
   create() {
     const wrapper = document.createElement("div");
-    wrapper.style.position = "static";
-    wrapper.style.zIndex = "2";
-    wrapper.style.display = "flex";
-    wrapper.style.alignItems = "center";
-    wrapper.style.gap = "8px";
-    wrapper.style.flexWrap = "wrap";
-    wrapper.style.padding = "0";
-    wrapper.style.margin = "0";
-    wrapper.style.width = "100%";
-    wrapper.style.boxSizing = "border-box";
-    wrapper.style.backgroundColor = "transparent";
-    wrapper.style.pointerEvents = "auto";
+    wrapper.className = "ai-paste-toolbar";
 
-    const prefixWrapper = document.createElement("div");
-    prefixWrapper.style.display = "flex";
-    prefixWrapper.style.alignItems = "center";
+    // Prefix Group
+    const prefixGroup = document.createElement("div");
+    prefixGroup.className = "ai-paste-group";
+
+    const prefixWrapper = document.createElement("label");
+    prefixWrapper.className = "ai-paste-checkbox-wrapper";
 
     const prefixCheckbox = document.createElement("input");
     prefixCheckbox.type = "checkbox";
-    prefixCheckbox.id = "ai-paste-prefix";
+    prefixCheckbox.className = "ai-paste-checkbox";
     prefixCheckbox.checked = this.prefixEnabled;
-    prefixCheckbox.style.cursor = "pointer";
+    prefixCheckbox.addEventListener('change', () => {
+      this.prefixEnabled = prefixCheckbox.checked;
+      this.notifyStateChange();
+    });
 
-    const prefixLabel = document.createElement("label");
-    prefixLabel.htmlFor = "ai-paste-prefix";
+    const prefixLabel = document.createElement("span");
+    prefixLabel.className = "ai-paste-label ai-paste-label-clickable";
     prefixLabel.textContent = "有前置文本";
-    prefixLabel.style.fontSize = "11px";
-    prefixLabel.style.margin = "0";
-    prefixLabel.style.cursor = "pointer";
-    prefixLabel.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
-
-    const editPrefixBtn = document.createElement("button");
-    editPrefixBtn.textContent = "编辑收藏";
-    editPrefixBtn.style.fontSize = "11px";
-    editPrefixBtn.style.padding = "0";
-    editPrefixBtn.style.borderRadius = "4px";
-    editPrefixBtn.style.border = "1px solid #ccc";
-    editPrefixBtn.style.cursor = "pointer";
-    editPrefixBtn.style.backgroundColor = this.isDarkMode ? "#3f3f46" : "#f4f4f5";
-    editPrefixBtn.style.color = this.isDarkMode ? "#e5e7eb" : "#111827";
-    editPrefixBtn.addEventListener("click", (e) => {
+    prefixLabel.title = "点击编辑前置文本";
+    prefixLabel.addEventListener("click", (e) => {
+      e.preventDefault(); // Prevent toggling checkbox
       e.stopPropagation();
       if (this.onEditPrefix) this.onEditPrefix(this.prefixText);
     });
 
     prefixWrapper.appendChild(prefixCheckbox);
     prefixWrapper.appendChild(prefixLabel);
-    prefixWrapper.appendChild(editPrefixBtn);
     this.prefixCheckbox = prefixCheckbox;
 
-    const checkboxWrapper = document.createElement("div");
-    checkboxWrapper.style.display = "flex";
-    checkboxWrapper.style.alignItems = "center";
-    
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = "ai-paste-autosend";
-    checkbox.checked = this.autoSend;
-    checkbox.style.cursor = "pointer";
-    
-    const label = document.createElement("label");
-    label.htmlFor = "ai-paste-autosend";
-    label.textContent = "自动发送";
-    label.style.fontSize = "11px";
-    label.style.margin = "0";
-    label.style.cursor = "pointer";
-    label.style.color = this.isDarkMode ? "#e0e0e0" : "#333";
+    prefixGroup.appendChild(prefixWrapper);
 
-    checkboxWrapper.appendChild(checkbox);
-    checkboxWrapper.appendChild(label);
-    this.autoSendCheckbox = checkbox;
+    // Auto Send Group
+    const autoSendWrapper = document.createElement("label");
+    autoSendWrapper.className = "ai-paste-checkbox-wrapper";
 
+    const autoSendCheckbox = document.createElement("input");
+    autoSendCheckbox.type = "checkbox";
+    autoSendCheckbox.className = "ai-paste-checkbox";
+    autoSendCheckbox.checked = this.autoSend;
 
+    const autoSendLabel = document.createElement("span");
+    autoSendLabel.className = "ai-paste-label";
+    autoSendLabel.textContent = "发送"; // Renamed from "自动发送"
+
+    autoSendWrapper.appendChild(autoSendCheckbox);
+    autoSendWrapper.appendChild(autoSendLabel);
+    this.autoSendCheckbox = autoSendCheckbox;
+
+    // Paste Button
     const pasteBtn = document.createElement("button");
+    pasteBtn.className = "ai-paste-btn ai-paste-btn-primary";
     pasteBtn.textContent = "粘贴";
-    pasteBtn.style.fontSize = "12px";
-    pasteBtn.style.padding = "0";
-    pasteBtn.style.borderRadius = "4px";
-    pasteBtn.style.border = "1px solid #ccc";
-    pasteBtn.style.cursor = "pointer";
-    pasteBtn.style.backgroundColor = this.isDarkMode ? "#10a37f" : "#10a37f";
-    pasteBtn.style.color = "#fff";
-    pasteBtn.style.fontWeight = "600";
-    pasteBtn.style.boxShadow = "0 1px 0 rgba(0,0,0,0.05)";
-    
+
     pasteBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if (this.onPaste) this.onPaste();
     });
 
-    wrapper.appendChild(prefixWrapper);
-    wrapper.appendChild(checkboxWrapper);
+    wrapper.appendChild(prefixGroup);
+    wrapper.appendChild(autoSendWrapper);
     wrapper.appendChild(pasteBtn);
 
     this.element = wrapper;
     this.favorites = [];
     this.loadFavorites();
     return wrapper;
+  }
+
+  notifyStateChange() {
+    if (this.onStateChange) {
+      this.onStateChange({
+        prefixEnabled: this.prefixEnabled,
+        prefixText: this.prefixText
+      });
+    }
   }
 
   isAutoSend() {
@@ -128,6 +109,7 @@ export class PasteControls {
 
   setPrefixText(text) {
     this.prefixText = text || '';
+    this.notifyStateChange();
   }
 
   async loadFavorites() {
@@ -152,7 +134,7 @@ export class PasteControls {
       } else {
         localStorage.setItem('aiPasteFavorites', JSON.stringify(this.favorites));
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   getFavorites() {

@@ -2,7 +2,8 @@ import { PasteControls } from '../ui/controls.js';
 import { EditModal } from '../ui/modal.js';
 
 export class ChatGPTAdapter {
-    constructor() {
+    constructor(options = {}) {
+        this.options = options;
         this.targetSelector = "#prompt-textarea";
         this.sendButtonSelector = '[data-testid="send-button"]';
         this.controlsParentSelector = "div.relative.flex.w-full.items-end.px-3.py-3"; // Fallback parent
@@ -25,6 +26,7 @@ export class ChatGPTAdapter {
         });
 
         this.controls = new PasteControls({
+            ...this.options,
             isDarkMode: document.documentElement.classList.contains("dark"),
             onPaste: () => this.onPasteClick(),
             onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })

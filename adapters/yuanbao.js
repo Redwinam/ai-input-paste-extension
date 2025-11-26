@@ -2,7 +2,8 @@ import { PasteControls } from '../ui/controls.js';
 import { EditModal } from '../ui/modal.js';
 
 export class YuanbaoAdapter {
-    constructor() {
+    constructor(options = {}) {
+        this.options = options;
         this.targetSelector = 'div.ql-editor[contenteditable="true"]';
         this.sendButtonSelector = "a.style__send-btn___ZsLmU"; // Based on previous script
         // Fallback selectors if class names change (common in React apps)
@@ -27,6 +28,7 @@ export class YuanbaoAdapter {
         });
 
         this.controls = new PasteControls({
+            ...this.options,
             isDarkMode: false,
             onPaste: () => this.onPasteClick(),
             onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })

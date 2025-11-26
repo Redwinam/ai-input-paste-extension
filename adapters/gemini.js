@@ -2,7 +2,8 @@ import { PasteControls } from '../ui/controls.js';
 import { EditModal } from '../ui/modal.js';
 
 export class GeminiAdapter {
-    constructor() {
+    constructor(options = {}) {
+        this.options = options;
         // Based on user provided HTML
         this.targetSelector = 'div.ql-editor.textarea';
         this.sendButtonSelector = 'button[aria-label="发送"]'; // "发送" from HTML
@@ -27,6 +28,7 @@ export class GeminiAdapter {
         });
 
         this.controls = new PasteControls({
+            ...this.options,
             isDarkMode: false,
             onPaste: () => this.onPasteClick(),
             onEditPrefix: () => this.modal.show({ initialText: this.controls.getPrefixText(), favorites: this.controls.getFavorites() })
